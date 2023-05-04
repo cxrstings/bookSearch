@@ -1,57 +1,132 @@
-// route to get logged in user's info (needs the token)
-export const getMe = (token) => {
-  return fetch('/api/users/me', {
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${token}`,
+export const getMe = async (token) => {
+  const response = await server.executeOperation({
+    query: gql`
+      query {
+        me {
+          _id
+          username
+          email
+          savedBooks {
+            bookId
+            authors
+            description
+            image
+            link
+            title
+          }
+        }
+      }
+    `,
+    context: {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
     },
   });
+
+  return response.data;
 };
 
-export const createUser = (userData) => {
-  return fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
+export const createUser = async (userData) => {
+  const response = await server.executeOperation({
+    query: gql`
+      mutation createUser($username: String!, $email: String!, $password: String!) {
+        createUser(username: $username, email: $email, password: $password) {
+          token
+          user {
+            _id
+            username
+            email
+          }
+        }
+      }
+    `,
+    variables: userData,
   });
+
+  return response.data.createUser;
 };
 
-export const loginUser = (userData) => {
-  return fetch('/api/users/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
+export const loginUser = async (userData) => {
+  const response = await server.executeOperation({
+    query: gql`
+      query loginUser($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          token
+          user {
+            _id
+            username
+            email
+          }
+        }
+      }
+    `,
+    variables: userData,
   });
+
+  return response.data.login;
 };
 
-// save book data for a logged in user
-export const saveBook = (bookData, token) => {
-  return fetch('/api/users', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${token}`,
+export const saveBook = async (bookData, token) => {
+  const response = await server.executeOperation({
+    query: gql`
+      mutation saveBook($bookData: BookInput!) {
+        saveBook(bookData: $bookData) {
+          _id
+          username
+          email
+          savedBooks {
+            bookId
+            authors
+            description
+            image
+            link
+            title
+          }
+        }
+      }
+    `,
+    variables: { bookData },
+    context: {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
     },
-    body: JSON.stringify(bookData),
   });
+
+  return response.data.saveBook;
 };
 
-// remove saved book data for a logged in user
-export const deleteBook = (bookId, token) => {
-  return fetch(`/api/users/books/${bookId}`, {
-    method: 'DELETE',
-    headers: {
-      authorization: `Bearer ${token}`,
+export const deleteBook = async (bookId, token) => {
+  const response = await server.executeOperation({
+    query: gql`
+      mutation deleteBook($bookId: ID!) {
+        deleteBook(bookId: $bookId) {
+          _id
+          username
+          email
+          savedBooks {
+            bookId
+            authors
+            description
+            image
+            link
+            title
+          }
+        }
+      }
+    `,
+    variables: { bookId },
+    context: {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
     },
   });
+
+  return response.data.deleteBook;
 };
 
-// make a search to google books api
-// https://www.googleapis.com/books/v1/volumes?q=harry+potter
 export const searchGoogleBooks = (query) => {
   return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
 };
