@@ -1,5 +1,12 @@
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+
+const client = new ApolloClient({
+  uri: '/graphql',
+  cache: new InMemoryCache()
+});
+
 export const getMe = async (token) => {
-  const response = await server.executeOperation({
+  const response = await client.query({
     query: gql`
       query {
         me {
@@ -28,8 +35,8 @@ export const getMe = async (token) => {
 };
 
 export const createUser = async (userData) => {
-  const response = await server.executeOperation({
-    query: gql`
+  const response = await client.mutate({
+    mutation: gql`
       mutation createUser($username: String!, $email: String!, $password: String!) {
         createUser(username: $username, email: $email, password: $password) {
           token
@@ -48,7 +55,7 @@ export const createUser = async (userData) => {
 };
 
 export const loginUser = async (userData) => {
-  const response = await server.executeOperation({
+  const response = await client.query({
     query: gql`
       query loginUser($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -68,8 +75,8 @@ export const loginUser = async (userData) => {
 };
 
 export const saveBook = async (bookData, token) => {
-  const response = await server.executeOperation({
-    query: gql`
+  const response = await client.mutate({
+    mutation: gql`
       mutation saveBook($bookData: BookInput!) {
         saveBook(bookData: $bookData) {
           _id
@@ -98,8 +105,8 @@ export const saveBook = async (bookData, token) => {
 };
 
 export const deleteBook = async (bookId, token) => {
-  const response = await server.executeOperation({
-    query: gql`
+  const response = await client.mutate({
+    mutation: gql`
       mutation deleteBook($bookId: ID!) {
         deleteBook(bookId: $bookId) {
           _id
